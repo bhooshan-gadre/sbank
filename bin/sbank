@@ -142,6 +142,15 @@ def checkpoint_save(xmldoc, fout, process):
     utils.write_filename(xmldoc, fout + "_checkpoint.gz")
 
 
+aligned_spin_approxs = ["TaylorF2RedSpin",
+        "IMRPhenomB","IMRPhenomC", "IMRPhenomD", "IMRPhenomXE", "IMRPhenomXEv1",
+        "SEOBNRv1", "SEOBNRv2", "SEOBNRv2_ROM_DoubleSpin", "SEOBNRv2_ROM_DoubleSpin_HI"]
+
+ecc_aligned_spin_approxs = ["IMRPhenomXE", "IMRPhenomXEv1"]
+
+tidal_aligned_spin_approxs = ["IMRPhenomD_NRTidalv2"]
+
+
 def parse_command_line():
 
     parser = OptionParser(usage = usage)
@@ -179,6 +188,16 @@ def parse_command_line():
     parser.add_option("--bh-spin-max", type=float, metavar="SPIN", help="Maximum spin for black holes when using --ns-bh-boundary-mass.")
     parser.add_option("--ns-spin-min", type=float, metavar="SPIN", help="Minimum spin for neutron stars when using --ns-bh-boundary-mass.")
     parser.add_option("--ns-spin-max", type=float, metavar="SPIN", help="Maximum spin for neutron stars when using --ns-bh-boundary-mass.")
+
+    parser.add_option("--use-tidal", action="store_true", default=False, help="flag to make sure eccentric parameters are used")
+
+    parser.add_option("--lambda1-only", action="store_true", default=False, help="flag to make sure eccentric parameters are used")
+    parser.add_option("--lambda1-min", dest="ecc_min", help="Set minimum allowed tidal lambda for mass1", metavar="LAMBDA", type="float", default=0.0)
+    parser.add_option("--lambda1-max", dest="ecc_max", help="Set maximum allowed tidal lambda for mass1", metavar="LAMBDA", type="float", default=5000.0)
+
+    parser.add_option("--lambda2-only", action="store_true", default=False, help="flag to make sure eccentric parameters are used")
+    parser.add_option("--lambda2-min", dest="ecc_min", help="Set minimum allowed tidal lambda for mass2", metavar="LAMBDA", type="float", default=0.0)
+    parser.add_option("--lambda2-max", dest="ecc_max", help="Set maximum allowed tidal lambda for mass2", metavar="LAMBDA", type="float", default=5000.0)
 
     #
     # initial condition options
@@ -286,6 +305,9 @@ def parse_command_line():
     if opts.approximant in ["IMRPhenomPv2", "SEOBNRv3"] and opts.aligned_spin:
         opts.approximant = {"IMRPhenomPv2":"IMRPhenomD",
                             "SEOBNRv3":"SEOBNRv2"}[opts.approximant]
+
+    if opts.approximant in tidal_aligned_spin_approxs:
+            parser.error("--use-tidal is required for the %s approximant" % opts.approximant)
 
     if (opts.mchirp_boundaries_file is not None) ^ (opts.mchirp_boundaries_index is not None):
         parser.error("must supply both --mchirp-boundaries-file and --mchirp-boundaries-index or neither")
@@ -511,6 +533,15 @@ else:
         params['spin2'] = (opts.spin2_min, opts.spin2_max)
     if opts.duration_min is not None or opts.duration_max is not None:
         params['duration'] = (opts.duration_min, opts.duration_max)
+
+    if opts.use_tidal:
+        if opts.lambda1_only:
+            params['lambda1'] = (opts.lambda1_min, opts.lambda1_max)
+        if opts.lambda2_only:
+            params['lambda2'] = (opts.lambda2_min, opts.lambda2_max)
+        else:
+            params['lambda1'] = (opts.lambda1_min, opts.lambda1_max)
+            params['lambda2'] = (opts.lambda2_min, opts.lambda2_max)
 
     # get the correct generator for the chosen approximant
     proposal = proposals[opts.approximant](opts.flow, tmplt_class, bank,

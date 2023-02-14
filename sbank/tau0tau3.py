@@ -647,11 +647,66 @@ def nonspin_hom_param_generator(flow, tmplt_class, bank, **constraints):
                           theta, phi, iota, psi, orb_phase, bank)
 
 
+def tidal_aligned_spin_param_generator(flow, tmplt_class, bank, **kwargs):
+    """
+    Specify the min and max mass of the bigger component, the min and
+    max mass of the total mass and the min and max values for the
+    z-axis spin angular momentum.
+    Currently to be used with PhenomXE and has eccentricity range of 0 <= ecc < 0.3.
+    """
+    dur_min, dur_max = kwargs.pop('duration', (None, None))
+    lambda1_min, lambda1_max = kwargs.pop('lambda1', (None, None))
+    lambda2_min, lambda2_max = kwargs.pop('lambda2', (None, None))
+
+    # define a helper function to apply the appropriate spin bounds
+    if 'ns_bh_boundary_mass' in kwargs and 'bh_spin' in kwargs \
+            and 'ns_spin' in kwargs:
+        bh_spin_bounds = kwargs.pop('bh_spin')
+        ns_spin_bounds = kwargs.pop('ns_spin')
+        ns_bh_boundary = kwargs.pop('ns_bh_boundary_mass')
+
+        def spin_bounds(mass1, mass2):
+            return (bh_spin_bounds if mass1 > ns_bh_boundary else ns_spin_bounds), \
+                   (bh_spin_bounds if mass2 > ns_bh_boundary else ns_spin_bounds)
+    else:
+        spin1b = kwargs.pop('spin1', (-1., 1.))
+        spin2b = kwargs.pop('spin2', (-1., 1.))
+
+        def spin_bounds(mass1, mass2):
+            return spin1b, spin2b
+
+    # the rest will be checked in the call to urand_tau0tau3_generator
+    for mass1, mass2 in urand_tau0tau3_generator(flow, **kwargs):
+
+        spin1_bounds, spin2_bounds = spin_bounds(mass1, mass2)
+
+        mtot = mass1 + mass2
+        chis_min = (mass1*spin1_bounds[0] + mass2*spin2_bounds[0])/mtot
+        chis_max = (mass1*spin1_bounds[1] + mass2*spin2_bounds[1])/mtot
+        chis = uniform(chis_min, chis_max)
+
+        s2min = max(spin2_bounds[0], (mtot*chis - mass1*spin1_bounds[1])/mass2)
+        s2max = min(spin2_bounds[1], (mtot*chis - mass1*spin1_bounds[0])/mass2)
+
+        spin2 = uniform(s2min, s2max)
+        spin1 = (chis*mtot - mass2*spin2)/mass1
+
+        lambda1 = uniform(lambda1_min, lambda1_max) if lambda1_min else 0.
+        lambda2 = uniform(lambda2_min, lambda2_max) if lambda2_min else 0.
+
+        t = tmplt_class(mass1, mass2, spin1, spin2, lambda1, lambda2, bank=bank)
+        if (dur_min is not None and t.dur < dur_min) \
+                or (dur_max is not None and t.dur > dur_max):
+            continue
+        yield t
+
+
 proposals = {
     "IMRPhenomB": IMRPhenomB_param_generator,
     "IMRPhenomC": IMRPhenomC_param_generator,
     "IMRPhenomD": aligned_spin_param_generator,
     "TaylorF2": aligned_spin_param_generator,
+    "IMRPhenomD_NRTidalv2": tidal_aligned_spin_param_generator,
     "IMRPhenomP": double_spin_precessing_param_generator,
     "IMRPhenomPv2": double_spin_precessing_param_generator,
     "TaylorF2RedSpin": aligned_spin_param_generator,

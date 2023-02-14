@@ -984,6 +984,137 @@ class EOBNRHigherOrderModePhaseMaxTemplate(IMRPrecessingSpinTemplate):
     approximant = "EOBNRv2HM_ROM"
 
 
+class TidalAlignedSpinTemplate(AlignedSpinTemplate):
+    """
+    """
+    approximant = "IMRPhenomD_NRTidalv2"
+    param_names = ("m1", "m2", "spin1z", "spin2z", "lambda1", "lambda2")
+    param_formats = ("%.2f", "%.2f", "%.2f", "%.2f", "%.2f", "%.2f")
+    hdf_dtype = AlignedSpinTemplate.hdf_dtype + \
+            [('lambda1', float), ('lambda2', float)]
+
+    def __init__(self, m1, m2, spin1z, spin2z, eccentricity, mean_per_ano, f_ref=None, bank=None, flow=None, duration=None):
+        self.eccentricity = float(eccentricity)
+        self.mean_per_ano = float(mean_per_ano)
+        self.f_ref = float(f_ref) if f_ref else 10.
+        AlignedSpinTemplate.__init__(self, m1, m2, spin1z, spin2z, bank,
+                                     flow=flow, duration=duration)
+        self._wf = {}
+        self._metric = None
+        self.sigmasq = 0.
+        self._mchirp = compute_mchirp(m1, m2)
+        self.tau0_40 = compute_tau0_40(self._mchirp)
+        self.tau0 = compute_tau0(self._mchirp, bank.flow)
+        self._dur = duration
+        self._f_final = None
+
+    @classmethod
+    def from_dict(cls, params, idx, bank):
+        flow = float(params['f_lower'][idx])
+        if not flow > 0:
+            flow = None
+
+        duration = float(params['template_duration'][idx]) if 'template_duration' in params else None
+        f_ref = float(params['f_ref'][idx]) if 'f_ref' in params else None
+        ecc = float(params['eccentricity'][idx]) if 'eccentricity' in params else 0.0
+        mean_per_ano = float(params['mean_per_ano'][idx]) if 'mean_per_ano' in params else 0.0
+
+        return cls(float(params['mass1'][idx]), float(params['mass2'][idx]),
+                   float(params['spin1z'][idx]), float(params['spin2z'][idx]),
+                   lambda1, lambda2, bank, flow=flow, duration=duration)
+
+    def to_storage_arr(self):
+        """Dump the template params to a numpy array."""
+        new_tmplt = super(EccentricAlignedSpinTemplate, self).to_storage_arr()
+        new_tmplt['lambda1'] = self.lambda1
+        new_tmplt['lambda2'] = self.lambda2
+        return new_tmplt
+
+
+class TidalAlignedSpinTemplate(AlignedSpinTemplate):
+    """
+    """
+    approximant = "IMRPhenomD_NRTidalv2"
+    param_names = ("m1", "m2", "spin1z", "spin2z", "lambda1", "lambda2")
+    param_formats = ("%.2f", "%.2f", "%.2f", "%.2f", "%.2f", "%.2f")
+    hdf_dtype = AlignedSpinTemplate.hdf_dtype + \
+            [('lambda1', float), ('lambda2', float)]
+
+    def __init__(self, m1, m2, spin1z, spin2z, lambda1, lambda2, bank=None, flow=None, duration=None):
+        self.lambda1 = float(lambda1)
+        self.lambda2 = float(lambda2)
+        AlignedSpinTemplate.__init__(self, m1, m2, spin1z, spin2z, bank,
+                                     flow=flow, duration=duration)
+        self._wf = {}
+        self._metric = None
+        self.sigmasq = 0.
+        self._mchirp = compute_mchirp(m1, m2)
+        self.tau0_40 = compute_tau0_40(self._mchirp)
+        self.tau0 = compute_tau0(self._mchirp, bank.flow)
+        self._dur = duration
+        self._f_final = None
+
+    @classmethod
+    def from_dict(cls, params, idx, bank):
+        flow = float(params['f_lower'][idx])
+        if not flow > 0:
+            flow = None
+
+        duration = float(params['template_duration'][idx]) if 'template_duration' in params else None
+        lambda1 = float(params['lambda1'][idx]) if 'lambda1' in params else 0.0
+        lambda2 = float(params['lambda2'][idx]) if 'lambda2' in params else 0.0
+
+        return cls(float(params['mass1'][idx]), float(params['mass2'][idx]),
+                   float(params['spin1z'][idx]), float(params['spin2z'][idx]),
+                   lambda1, lambda2,
+                   bank, flow=flow, duration=duration)
+
+    def to_storage_arr(self):
+        """Dump the template params to a numpy array."""
+        new_tmplt = super(EccentricAlignedSpinTemplate, self).to_storage_arr()
+        new_tmplt['lambda1'] = self.lambda1
+        new_tmplt['lambda2'] = self.lambda2
+        return new_tmplt
+
+
+
+class IMRPhenomDNRTv2Template(TidalAlignedSpinTemplate):
+    approx_name = "IMRPhenomD_NRTidalv2"
+    approximant = "IMRPhenomD_NRTidalv2"
+
+    def _compute_waveform(self, df, f_final):
+        phi0 = 0  # This is a reference phase, and not an intrinsic parameter
+        LALpars = lal.CreateDict()
+        lalsimulation.SimInspiralWaveformParamsInsertTidalLambda1(LALpars, self.lambda1)
+        lalsimulation.SimInspiralWaveformParamsInsertTidalLambda2(LALpars, self.lambda2)
+
+        approx = lalsim.GetApproximantFromString(self.approx_name)
+        hplus_fd, hcross_fd = lalsim.SimInspiralChooseFDWaveform(
+            self.m1*MSUN_SI, self.m2*MSUN_SI,
+            0., 0., self.spin1z,
+            0., 0., self.spin2z,
+            1.e6*PC_SI, 0., phi0,
+            0., self.eccentricity, self.mean_per_ano,
+            df, self.flow, f_final, self.f_ref,
+            LALpars, approx)
+        return hplus_fd
+
+    def _get_f_final(self):
+        f_final = 2048.
+        return f_final
+        # return self._get_isco_f_final()
+
+    def _get_dur(self):
+        dur = lalsim.SimIMRPhenomDChirpTime(self.m1 * MSUN_SI,
+                                            self.m2 * MSUN_SI, self.spin1z,
+                                            self.spin2z, self.flow)
+        # add a 10% to be consistent with PyCBC's duration estimate,
+        # may want to FIXME if that changes
+        return dur * 1.1 + 1
+
+    def _get_dur(self):
+        return
+
 waveforms = {
     "TaylorF2RedSpin": TaylorF2RedSpinTemplate,
     "TaylorF2": TaylorF2Template,
