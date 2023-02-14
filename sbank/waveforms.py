@@ -1014,9 +1014,8 @@ class TidalAlignedSpinTemplate(AlignedSpinTemplate):
             flow = None
 
         duration = float(params['template_duration'][idx]) if 'template_duration' in params else None
-        f_ref = float(params['f_ref'][idx]) if 'f_ref' in params else None
-        ecc = float(params['eccentricity'][idx]) if 'eccentricity' in params else 0.0
-        mean_per_ano = float(params['mean_per_ano'][idx]) if 'mean_per_ano' in params else 0.0
+        lambda1 = float(params['lambda1'][idx]) if 'lambda1' in params else 0.0
+        lambda2 = float(params['lambda2'][idx]) if 'lambda2' in params else 0.0
 
         return cls(float(params['mass1'][idx]), float(params['mass2'][idx]),
                    float(params['spin1z'][idx]), float(params['spin2z'][idx]),
