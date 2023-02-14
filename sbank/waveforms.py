@@ -993,10 +993,9 @@ class TidalAlignedSpinTemplate(AlignedSpinTemplate):
     hdf_dtype = AlignedSpinTemplate.hdf_dtype + \
             [('lambda1', float), ('lambda2', float)]
 
-    def __init__(self, m1, m2, spin1z, spin2z, eccentricity, mean_per_ano, f_ref=None, bank=None, flow=None, duration=None):
-        self.eccentricity = float(eccentricity)
-        self.mean_per_ano = float(mean_per_ano)
-        self.f_ref = float(f_ref) if f_ref else 10.
+    def __init__(self, m1, m2, spin1z, spin2z, lambda1, lambda2, bank=None, flow=None, duration=None):
+        self.lambda1 = float(lambda1)
+        self.lambda2 = float(lambda2)
         AlignedSpinTemplate.__init__(self, m1, m2, spin1z, spin2z, bank,
                                      flow=flow, duration=duration)
         self._wf = {}
@@ -1025,7 +1024,7 @@ class TidalAlignedSpinTemplate(AlignedSpinTemplate):
 
     def to_storage_arr(self):
         """Dump the template params to a numpy array."""
-        new_tmplt = super(EccentricAlignedSpinTemplate, self).to_storage_arr()
+        new_tmplt = super(TidalAlignedSpinTemplate, self).to_storage_arr()
         new_tmplt['lambda1'] = self.lambda1
         new_tmplt['lambda2'] = self.lambda2
         return new_tmplt
