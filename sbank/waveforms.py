@@ -1031,50 +1031,50 @@ class TidalAlignedSpinTemplate(AlignedSpinTemplate):
         return new_tmplt
 
 
-class TidalAlignedSpinTemplate(AlignedSpinTemplate):
-    """
-    """
-    approximant = "IMRPhenomD_NRTidalv2"
-    param_names = ("m1", "m2", "spin1z", "spin2z", "lambda1", "lambda2")
-    param_formats = ("%.2f", "%.2f", "%.2f", "%.2f", "%.2f", "%.2f")
-    hdf_dtype = AlignedSpinTemplate.hdf_dtype + \
-            [('lambda1', float), ('lambda2', float)]
-
-    def __init__(self, m1, m2, spin1z, spin2z, lambda1, lambda2, bank=None, flow=None, duration=None):
-        self.lambda1 = float(lambda1)
-        self.lambda2 = float(lambda2)
-        AlignedSpinTemplate.__init__(self, m1, m2, spin1z, spin2z, bank,
-                                     flow=flow, duration=duration)
-        self._wf = {}
-        self._metric = None
-        self.sigmasq = 0.
-        self._mchirp = compute_mchirp(m1, m2)
-        self.tau0_40 = compute_tau0_40(self._mchirp)
-        self.tau0 = compute_tau0(self._mchirp, bank.flow)
-        self._dur = duration
-        self._f_final = None
-
-    @classmethod
-    def from_dict(cls, params, idx, bank):
-        flow = float(params['f_lower'][idx])
-        if not flow > 0:
-            flow = None
-
-        duration = float(params['template_duration'][idx]) if 'template_duration' in params else None
-        lambda1 = float(params['lambda1'][idx]) if 'lambda1' in params else 0.0
-        lambda2 = float(params['lambda2'][idx]) if 'lambda2' in params else 0.0
-
-        return cls(float(params['mass1'][idx]), float(params['mass2'][idx]),
-                   float(params['spin1z'][idx]), float(params['spin2z'][idx]),
-                   lambda1, lambda2,
-                   bank, flow=flow, duration=duration)
-
-    def to_storage_arr(self):
-        """Dump the template params to a numpy array."""
-        new_tmplt = super(EccentricAlignedSpinTemplate, self).to_storage_arr()
-        new_tmplt['lambda1'] = self.lambda1
-        new_tmplt['lambda2'] = self.lambda2
-        return new_tmplt
+# class TidalAlignedSpinTemplate(AlignedSpinTemplate):
+#     """
+#     """
+#     approximant = "IMRPhenomD_NRTidalv2"
+#     param_names = ("m1", "m2", "spin1z", "spin2z", "lambda1", "lambda2")
+#     param_formats = ("%.2f", "%.2f", "%.2f", "%.2f", "%.2f", "%.2f")
+#     hdf_dtype = AlignedSpinTemplate.hdf_dtype + \
+#             [('lambda1', float), ('lambda2', float)]
+#
+#     def __init__(self, m1, m2, spin1z, spin2z, lambda1, lambda2, bank=None, flow=None, duration=None):
+#         self.lambda1 = float(lambda1)
+#         self.lambda2 = float(lambda2)
+#         AlignedSpinTemplate.__init__(self, m1, m2, spin1z, spin2z, bank,
+#                                      flow=flow, duration=duration)
+#         self._wf = {}
+#         self._metric = None
+#         self.sigmasq = 0.
+#         self._mchirp = compute_mchirp(m1, m2)
+#         self.tau0_40 = compute_tau0_40(self._mchirp)
+#         self.tau0 = compute_tau0(self._mchirp, bank.flow)
+#         self._dur = duration
+#         self._f_final = None
+#
+#     @classmethod
+#     def from_dict(cls, params, idx, bank):
+#         flow = float(params['f_lower'][idx])
+#         if not flow > 0:
+#             flow = None
+#
+#         duration = float(params['template_duration'][idx]) if 'template_duration' in params else None
+#         lambda1 = float(params['lambda1'][idx]) if 'lambda1' in params else 0.0
+#         lambda2 = float(params['lambda2'][idx]) if 'lambda2' in params else 0.0
+#
+#         return cls(float(params['mass1'][idx]), float(params['mass2'][idx]),
+#                    float(params['spin1z'][idx]), float(params['spin2z'][idx]),
+#                    lambda1, lambda2,
+#                    bank, flow=flow, duration=duration)
+#
+#     def to_storage_arr(self):
+#         """Dump the template params to a numpy array."""
+#         new_tmplt = super(EccentricAlignedSpinTemplate, self).to_storage_arr()
+#         new_tmplt['lambda1'] = self.lambda1
+#         new_tmplt['lambda2'] = self.lambda2
+#         return new_tmplt
 
 
 
@@ -1123,6 +1123,9 @@ waveforms = {
     "IMRPhenomD": IMRPhenomDTemplate,
     "IMRPhenomP": IMRPhenomPTemplate,
     "IMRPhenomPv2": IMRPhenomPv2Template,
+    "IMRPhenomD_NRTidalv2": IMRPhenomDNRTv2Template,
+    "IMRPhenomD_NRT": IMRPhenomDNRTv2Template,
+    "IMRPhenomD_NRT2": IMRPhenomDNRTv2Template,
     "SEOBNRv2": SEOBNRv2Template,
     "SEOBNRv2_ROM_DoubleSpin": SEOBNRv2ROMDoubleSpinTemplate,
     "SEOBNRv2_ROM_DoubleSpin_HI": SEOBNRv2ROMDoubleSpinHITemplate,
