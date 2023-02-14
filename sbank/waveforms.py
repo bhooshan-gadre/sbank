@@ -1070,7 +1070,7 @@ class TidalAlignedSpinTemplate(AlignedSpinTemplate):
 
     def to_storage_arr(self):
         """Dump the template params to a numpy array."""
-        new_tmplt = super(EccentricAlignedSpinTemplate, self).to_storage_arr()
+        new_tmplt = super(TidalAlignedSpinTemplate, self).to_storage_arr()
         new_tmplt['lambda1'] = self.lambda1
         new_tmplt['lambda2'] = self.lambda2
         return new_tmplt
@@ -1084,8 +1084,8 @@ class IMRPhenomDNRTv2Template(TidalAlignedSpinTemplate):
     def _compute_waveform(self, df, f_final):
         phi0 = 0  # This is a reference phase, and not an intrinsic parameter
         LALpars = lal.CreateDict()
-        lalsimulation.SimInspiralWaveformParamsInsertTidalLambda1(LALpars, self.lambda1)
-        lalsimulation.SimInspiralWaveformParamsInsertTidalLambda2(LALpars, self.lambda2)
+        lalsim.SimInspiralWaveformParamsInsertTidalLambda1(LALpars, self.lambda1)
+        lalsim.SimInspiralWaveformParamsInsertTidalLambda2(LALpars, self.lambda2)
 
         approx = lalsim.GetApproximantFromString(self.approx_name)
         hplus_fd, hcross_fd = lalsim.SimInspiralChooseFDWaveform(
