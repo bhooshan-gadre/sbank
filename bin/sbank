@@ -192,12 +192,12 @@ def parse_command_line():
     parser.add_option("--use-tidal", action="store_true", default=False, help="flag to make sure eccentric parameters are used")
 
     parser.add_option("--lambda1-only", action="store_true", default=False, help="flag to make sure eccentric parameters are used")
-    parser.add_option("--lambda1-min", dest="ecc_min", help="Set minimum allowed tidal lambda for mass1", metavar="LAMBDA", type="float", default=0.0)
-    parser.add_option("--lambda1-max", dest="ecc_max", help="Set maximum allowed tidal lambda for mass1", metavar="LAMBDA", type="float", default=5000.0)
+    parser.add_option("--lambda1-min", dest="lambda1_min", help="Set minimum allowed tidal lambda for mass1", metavar="LAMBDA", type="float", default=0.0)
+    parser.add_option("--lambda1-max", dest="lambda1_max", help="Set maximum allowed tidal lambda for mass1", metavar="LAMBDA", type="float", default=5000.0)
 
     parser.add_option("--lambda2-only", action="store_true", default=False, help="flag to make sure eccentric parameters are used")
-    parser.add_option("--lambda2-min", dest="ecc_min", help="Set minimum allowed tidal lambda for mass2", metavar="LAMBDA", type="float", default=0.0)
-    parser.add_option("--lambda2-max", dest="ecc_max", help="Set maximum allowed tidal lambda for mass2", metavar="LAMBDA", type="float", default=5000.0)
+    parser.add_option("--lambda2-min", dest="lambda2_min", help="Set minimum allowed tidal lambda for mass2", metavar="LAMBDA", type="float", default=0.0)
+    parser.add_option("--lambda2-max", dest="lambda2_max", help="Set maximum allowed tidal lambda for mass2", metavar="LAMBDA", type="float", default=5000.0)
 
     #
     # initial condition options
@@ -306,7 +306,7 @@ def parse_command_line():
         opts.approximant = {"IMRPhenomPv2":"IMRPhenomD",
                             "SEOBNRv3":"SEOBNRv2"}[opts.approximant]
 
-    if opts.approximant in tidal_aligned_spin_approxs:
+    if opts.approximant in tidal_aligned_spin_approxs and not opts.use_tidal:
             parser.error("--use-tidal is required for the %s approximant" % opts.approximant)
 
     if (opts.mchirp_boundaries_file is not None) ^ (opts.mchirp_boundaries_index is not None):
