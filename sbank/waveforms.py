@@ -1093,8 +1093,8 @@ class IMRPhenomDNRTv2Template(TidalAlignedSpinTemplate):
             0., 0., self.spin1z,
             0., 0., self.spin2z,
             1.e6*PC_SI, 0., phi0,
-            0., self.eccentricity, self.mean_per_ano,
-            df, self.flow, f_final, self.f_ref,
+            0., 0., 0.,
+            df, self.flow, f_final, 0,
             LALpars, approx)
         return hplus_fd
 
