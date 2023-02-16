@@ -203,7 +203,7 @@ def parse_command_line():
     # initial condition options
     #
     parser.add_option("--seed", help="Set the seed for the random number generator used by SBank for waveform parameter (masss, spins, ...) generation.", metavar="INT", default=1729, type="int")
-    parser.add_option("--bank-seed", metavar="FILE[:APPROX]", help="Add templates from FILE to the initial bank. If APPROX is also specified, the templates from this seed bank will be computed with this approximant instead of the one specified by --approximant. Can be specified multiple times. Only the additional templates will be outputted.", action="append", default=[])
+    parser.add_option("--seed-bank", metavar="FILE[:APPROX]", help="Add templates from FILE to the initial bank. If APPROX is also specified, the templates from this seed bank will be computed with this approximant instead of the one specified by --approximant. Can be specified multiple times. Only the additional templates will be outputted.", action="append", default=[])
     parser.add_option("--trial-waveforms", metavar="FILE", help="If supplied, instead of choosing points randomly, choose trial points from the sngl_inspiral table within the supplied XML file. Generation will terminate if the end of the file is reached unless any other termination condition is met first.")
 
     #
@@ -254,7 +254,7 @@ def parse_command_line():
     #
     # check for argument consistency
     #
-    for seed in opts.bank_seed:
+    for seed in opts.seed_bank:
         if seed == opts.output_filename:
             raise ValueError("Bank seed %s would be overwritten by output file. Choose a different output name." % seed)
 
@@ -402,7 +402,7 @@ bank = Bank(noise_model, opts.flow, opts.use_metric, opts.cache_waveforms, opts.
             opts.neighborhood_param, coarse_match_df=opts.coarse_match_df,
             iterative_match_df_max=opts.iterative_match_df_max, fhigh_max=opts.fhigh_max,
             optimize_flow=opts.optimize_flow)
-for file_approx in opts.bank_seed:
+for file_approx in opts.seed_bank:
 
     # if no approximant specified, use same approximant as the
     # templates we will add
