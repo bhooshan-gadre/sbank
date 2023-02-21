@@ -535,9 +535,13 @@ else:
         params['duration'] = (opts.duration_min, opts.duration_max)
 
     if opts.use_tidal:
+        if opts.lambda1_only and opts.lambda1_only:
+            raise
         if opts.lambda1_only:
             params['lambda1'] = (opts.lambda1_min, opts.lambda1_max)
+            params['lambda2'] = (0., 0.)
         if opts.lambda2_only:
+            params['lambda1'] = (0., 0.)
             params['lambda2'] = (opts.lambda2_min, opts.lambda2_max)
         else:
             params['lambda1'] = (opts.lambda1_min, opts.lambda1_max)
