@@ -694,8 +694,6 @@ def tidal_aligned_spin_param_generator(flow, tmplt_class, bank, **kwargs):
         lambda1 = uniform(lambda1_min, lambda1_max) if lambda1_max else 0.
         lambda2 = uniform(lambda2_min, lambda2_max) if lambda2_max else 0.
 
-        print("in tidal gen:", lambda1, lambda1_min, lambda1_max)
-        print(lambda1, lambda1_min, lambda1_max)
         t = tmplt_class(mass1, mass2, spin1, spin2, lambda1, lambda2, bank=bank)
         if (dur_min is not None and t.dur < dur_min) \
                 or (dur_max is not None and t.dur > dur_max):
