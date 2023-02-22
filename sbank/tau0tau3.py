@@ -655,8 +655,10 @@ def tidal_aligned_spin_param_generator(flow, tmplt_class, bank, **kwargs):
     Currently to be used with PhenomXE and has eccentricity range of 0 <= ecc < 0.3.
     """
     dur_min, dur_max = kwargs.pop('duration', (None, None))
-    lambda1_min, lambda1_max = kwargs.pop('lambda1', (None, None))
-    lambda2_min, lambda2_max = kwargs.pop('lambda2', (None, None))
+    lambda1_min, lambda1_max = kwargs.pop('lambda1', (0., 0.))
+    lambda2_min, lambda2_max = kwargs.pop('lambda2', (0., 0.))
+    print("Info: Will be using following lambda bounds: lambda1 in", lambda1_min, lambda1_max)
+    print("Info: Will be using following lambda bounds: lambda2 in", lambda2_min, lambda2_max)
 
     # define a helper function to apply the appropriate spin bounds
     if 'ns_bh_boundary_mass' in kwargs and 'bh_spin' in kwargs \

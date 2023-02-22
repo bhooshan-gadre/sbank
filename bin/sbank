@@ -535,16 +535,19 @@ else:
         params['duration'] = (opts.duration_min, opts.duration_max)
 
     if opts.use_tidal:
-        if opts.lambda1_only and not opts.lambda2_only:
+        if opts.lambda2_only and opts.lambda1_only:
+            print("Warning: both lambda1-only and lambda2-only flags are on. To use both lambdas, do not use any lambda-only flag")
+            raise ValueError("please choose either lambda1 or lambda2")
+        if opts.lambda1_only:
+            print("Info: Using only lambda1")
             params['lambda1'] = (opts.lambda1_min, opts.lambda1_max)
             params['lambda2'] = (0., 0.)
-        if opts.lambda2_only and not opts.lambda1_only:
+        if opts.lambda2_only:
+            print("Info: Using only lambda2")
             params['lambda1'] = (0., 0.)
             params['lambda2'] = (opts.lambda2_min, opts.lambda2_max)
-        else:
-            if opts.lambda2_only and opts.lambda1_only:
-                print("Warning: both lambda1-only and lambda3-only flags are on. So we use both tidal lambdas")
-
+        elif not opts.lambda2_only and not opts.lambda1_only:
+            print("Info: Using both - lambda1 and lambda2")
             params['lambda1'] = (opts.lambda1_min, opts.lambda1_max)
             params['lambda2'] = (opts.lambda2_min, opts.lambda2_max)
 
